@@ -1,15 +1,17 @@
-function [carrierConc, carrierConc2, CNT_D ] = DispBandDOS4( n, m)
-%CNT_D returned in units of Ang
+function [carrierConc, carrierConc2, CNT_D ] = DispBandDOS( n, m, Temp, Resolution)
+% CNT_D - this is the CNT diamter returned in units of Ang
+% Temp - temperature in [K]
+% Resolution - when numerically builing the DOS graphs this is an
+% important parameter to consider the large the value the more accurate the
+% graph but the more expensive the calculation
 %carrierConc and carrierConc2 are both in units of 1/cm3
 %carrierConc - for a layer of the CNT, (Might need the layer if considering
 %MWCNT)
 %carrierConc2 - for a whole SWCNT
 close all
 
-Temp = 300;      % [K]
 Elimit=-1;       %Only consider dispersion relation where bands cross below Elimit
 %If set equal to -1 all bands are included
-Resolution=4000;
 
 a=1.42*(3)^(1/2); %Units of Angstroms
 
@@ -137,7 +139,7 @@ if (Elimit==-1)
 else
     j=1;
     Enew=zeros((Resolution*2+1),Nnew);
-    for i=1:N
+    for i=1:round(N)
         if(min(Eini(:,i))<Elimit)
             Enew(:,j)=Eini(:,i);
             plot(knew,Enew(:,j));
@@ -298,6 +300,7 @@ plot(inc/2:inc:Emax-inc/2,DOS.*F');
 [ CNT_D ] = CNT_Diameter( n, m );                                 %Units [Ang]
 Area = (CNT_D/2*10^-8)^2*pi-((CNT_D/2-0.617)*10^-8)^2*pi;         %Units [cm^2]
 Area2 = (CNT_D/2*10^-8)^2*pi;                                     %Units [cm^2]
+
 %This is the carrier concentration using the Area that Marulanda uses
 carrierConc = trapz(inc/2:inc:Emax-inc/2,DOS.*F'/(Area*10^-8));   %[1/cm^3]
 
@@ -336,9 +339,7 @@ rval3 = 0;
 rval4 = 0;
 if(slope2>0 && slope3<0 )
     
-    [ vq, h, rval1, rval2, rval3 ] = fitMiddle( Emid',abs(1./dEdk), intervals);
-    legend( h, 'y vs. x', 'untitled fit 1', 'Location', 'NorthEast' );
-    set(gcf,'color','w')
+    [ vq, rval1, rval2, rval3 ] = fitMiddle( Emid',abs(1./dEdk), intervals);
     figure(11)
     hold on
     plot(intervals,vq);
@@ -347,15 +348,13 @@ end
 if(rval1<0.93 && rval2<0.93 && rval3<0.93 && rval4<0.93)
     if (slope>0)
        
-        [ vq, h ] = fitRight(Emid',abs(1./dEdk), intervals);
-        legend( h, 'y vs. x', 'untitled fit 1', 'Location', 'NorthEast' );
+        [ vq ] = fitRight(Emid',abs(1./dEdk), intervals);
         figure(11)
         hold on
         plot(intervals,vq);
     else
         
-        [ vq, h ] = fitLeft( x, y, intervals);
-        legend( h, 'y vs. x', 'untitled fit 1', 'Location', 'NorthEast' );
+        [ vq ] = fitLeft( Emid',abs(1./dEdk), intervals);
         figure(11)
         hold on
         plot(intervals,vq);
@@ -365,7 +364,7 @@ end
 
 end
 
-function [ vq, h, rval1, rval2, rval3, rval4 ] = fitMiddle( x, y, intervals)
+function [ vq, rval1, rval2, rval3, rval4 ] = fitMiddle( x, y, intervals)
 
 [xData, yData] = prepareCurveData( x, y );
 
@@ -449,7 +448,7 @@ elseif( rval4>0.93)
 end
 end
 
-function [vq, h ] = fitRight(x, y, intervals)
+function [vq] = fitRight(x, y, intervals)
 
 [xData, yData] = prepareCurveData( x, y );
 
@@ -543,7 +542,7 @@ end
 
 end
 
-function [ vq, h ] = fitLeft( x, y, intervals)
+function [ vq ] = fitLeft( x, y, intervals)
 
 [xData, yData] = prepareCurveData( x, y );
 
