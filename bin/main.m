@@ -1,6 +1,6 @@
-function main( chiral_vectors, Temperature_values, Resolution)
+function main(varargin)
 
-HelpMessage();
+[chiral_vectors, Temperature_values, Resolution ] = ParseArgs(varargin, nargin);
 
 if (exist('CarrierConc','dir')~=7)
    mkdir('CarrierConc'); 
@@ -51,24 +51,62 @@ for index=1:rows
 
 end
 
-    function HelpMessage()
-        fprintf('This script excepts the following flags followed by ');
-        fprintf('thier associated values:\n\n');
-        fprintf('--help [none]\n');
-        fprintf('--chiral_vector [matrix(:,2)]\n');
-        fprintf('--temperature [matrix(:,1)]\n');
-        fprintf('--resolution [positive integer]\n\n');
-        fprintf('--help displays acceptable flags and their appropraite ');
-        fprintf('values\n\n');
-        fprintf('--chiral_vector accepts a matrix with an arbitrary ');
-        fprintf('number of rows and two columns. Columne 1 is associated');
-        fprintf(' with the n chiral number of a CNT and column 2 is ');
-        fprintf('associated with the m chiral number of a CNT.\n\n');
-        fprintf('--temperature should be passed an array/matrix with ');
-        fprintf('with a single column containing all the temperatures in');
-        fprintf('Kelvin to be looped through.\n\n');
-        fprintf('--resolution this should be passed a positive integer ');
-        fprintf('value determing the resolution of the numerical ');
-        fprintf('calculations used internally.');
+end
+
+function HelpMessage()
+fprintf('This script excepts the following flags followed by ');
+fprintf('thier associated values:\n\n');
+fprintf('--help [none]\n');
+fprintf('--chiral_vectors [matrix(:,2)]\n');
+fprintf('--temperature [matrix(:,1)]\n');
+fprintf('--resolution [positive integer]\n\n');
+fprintf('--help displays acceptable flags and their appropraite ');
+fprintf('values\n\n');
+fprintf('--chiral_vectors accepts a matrix with an arbitrary ');
+fprintf('number of rows and two columns. Columne 1 is associated');
+fprintf(' with the n chiral number of a CNT and column 2 is ');
+fprintf('associated with the m chiral number of a CNT.\n\n');
+fprintf('--temperature should be passed an array/matrix with ');
+fprintf('with a single column containing all the temperatures in');
+fprintf('Kelvin to be looped through.\n\n');
+fprintf('--resolution this should be passed a positive integer ');
+fprintf('value determing the resolution of the numerical ');
+fprintf('calculations used internally.');
+end
+
+function [chiral_vectors, Temperature_values, Resolution ] = ParseArgs(varargin,nargin)
+
+if(nargin > 7)
+    error('You have provided too many input arguments!');
+end
+
+% Set Default Temperature
+Temperature_values = 300;
+% Set Default Resolution
+Resolution = 1000;
+
+chiral_vectors = [];
+i = 1;
+while i<nargin
+    if(strcmp(varargin{i},'--help'))
+        HelpMessage();
+    elseif(strcmp(varargin{i},'--chiral_vectors'))
+        i=i+1;
+        chiral_vectors = varargin{i};
+    elseif(strcmp(varargin{i},'--temperature'))
+        i=i+1;
+        Temperature_values = varargin{i};
+    elseif(strcmp(varargin{i},'--resolution'))
+        i=i+1;
+        Resolution = varargin{i};
+    else
+        error('Unrecognized flag '+varargin{i});
     end
+    i = i+1;
+end
+
+if(isempty(chiral_vectors))
+   error('A chiral vector must be passed in!'); 
+end
+
 end
